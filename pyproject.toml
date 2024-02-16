@@ -16,11 +16,10 @@ classifiers = [
 
 dependencies = [
   "sosap==0.0.1",
-  "torch==2.2.0",
-  "torchaudio==2.2.0",
   "onnxruntime==1.16.3",
   "numpy==1.24.4",
   "khmercut==0.0.2",
+  "librosa==0.10.1"
 ]
 
 [project.urls]
@@ -30,7 +29,7 @@ repository = "https://github.com/seanghay/kfa"
 include-package-data = true
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["kfa"]
 
 [build-system]
 requires = ["setuptools==67.4.0"]
