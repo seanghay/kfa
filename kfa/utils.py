@@ -1,12 +1,16 @@
 import numpy as np
 from dataclasses import dataclass
 
+def time_to_frame(time):
+    stride_msec = 20
+    frames_per_sec = 1000 / stride_msec
+    return int(time * frames_per_sec)
+
 @dataclass
 class Point:
     token_index: int
     time_index: int
     score: float
-
 
 @dataclass
 class Segment:
@@ -24,7 +28,6 @@ class Segment:
 
 def backtrack(trellis, emission, tokens, blank_id=0):
     t, j = trellis.shape[0] - 1, trellis.shape[1] - 1
-
     path = [Point(j, t, np.exp(emission[t, blank_id]))]
     while j > 0:
         assert t > 0
