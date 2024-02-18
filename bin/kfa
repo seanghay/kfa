@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+from pathlib import Path
+from argparse import ArgumentParser
+import librosa
+import json
+from kfa.forced_alignment import align
+
+if __name__ == "__main__":
+    parser = ArgumentParser(
+        "kfa",
+        description="Khmer Forced Aligner powered by Wav2Vec2CTC and Phonetisaurus",
+    )
+    parser.add_argument("-a", "--audio", type=Path, required=True, help="Audio file")
+    parser.add_argument("-t", "--text", type=Path, required=True, help="Text file")
+    parser.add_argument(
+        "-o", "--output", type=Path, required=True, help="Output JSONL file"
+    )
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        required=False,
+        default=False,
+        help="Suppress progress information",
+    )
+    args = parser.parse_args()
+    y, sr = librosa.load(args.audio, sr=16000, mono=True)
+
+    with open(args.text) as infile:
+        text = infile.read()
+
+    alignments = list(align(y, sr, text, silent=args.quiet))
+
+    with open(args.output, "w") as outfile:
+        for text_segment, second_start, second_end in alignments:
+            outfile.write(
+                json.dumps(
+                    {
+                        "audio_filepath": str(args.audio),
+                        "text": text_segment,
+                        "duration": second_end - second_start,
+                        "start": second_start,
+                        "end": second_end,
+                    },
+                    ensure_ascii=False,
+                )
+                + "\n"
+            )
