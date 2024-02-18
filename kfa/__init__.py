@@ -1,0 +1,1 @@
+from kfa.forced_alignment import align

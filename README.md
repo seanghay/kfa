@@ -12,15 +12,22 @@ pip install kfa
 #### CLI
 
 ```shell
-kfa -i audio.wav -t text.txt -o alignments.jsonl
+kfa -a audio.wav -t text.txt -o alignments.jsonl
 ```
 
 #### Python
 
 ```python
 from kfa import align
+import librosa
 
-align("audio.wav", "transcription")
+with open("test.txt") as infile:
+    text = infile.read()
+
+y, sr = librosa.load("text.wav", sr=16000, mono=True)
+
+for alignment in align(y, sr, text):
+  print(alignment)
 ```
 
 #### References

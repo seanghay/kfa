@@ -3,7 +3,7 @@ from pathlib import Path
 from argparse import ArgumentParser
 import librosa
 import json
-from kfa.forced_alignment import align
+from kfa import align
 
 if __name__ == "__main__":
     parser = ArgumentParser(
