@@ -2,7 +2,7 @@
 
 A fast Khmer Forced Aligner powered by **Wav2Vec2CTC** and **Phonetisaurus**.
 
-- [x] Built-in Speech Enhancement
+- [ ] Built-in Speech Enhancement
 - [x] Word-level Alignment
 
 ```shell
