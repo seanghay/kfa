@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setuptools.setup(
     name="kfa",
-    version="0.0.1",
+    version="0.0.3",
     description="Khmer Forced Aligner powered by Wav2Vec2CTC and Phonetisaurus",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -25,6 +25,7 @@ setuptools.setup(
     package_data={"kfa": ["g2p.fst", "lexicon.pkl"]},
     include_package_data=True,
     install_requires=[
+        "onnxruntime",
         "sosap==0.0.1",
         "numpy==1.24.4",
         "khmercut==0.0.2",
