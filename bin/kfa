@@ -33,7 +33,7 @@ if __name__ == "__main__":
         text = textbytes.decode(detection["encoding"])
     alignments = list(align(y, sr, text, silent=args.quiet))
     with open(args.output, "w") as outfile:
-        for text_segment, second_start, second_end, actual_second_start in alignments:
+        for text_segment, second_start, second_end, actual_second_start, actual_second_end in alignments:
             outfile.write(
                 json.dumps(
                     {
@@ -42,7 +42,8 @@ if __name__ == "__main__":
                         "duration": second_end - second_start,
                         "start": second_start,
                         "end": second_end,
-                        "actual_start": actual_second_start
+                        "actual_start": actual_second_start,
+                        "actual_end": actual_second_end,
                     },
                     ensure_ascii=False,
                 )
