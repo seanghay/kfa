@@ -1,5 +1,7 @@
 ## KFA
 
+[[Google Colab]](https://colab.research.google.com/drive/1-aRxWOzqqsL7Qbgp95dlwN-_cvI41INf?usp=sharing)
+
 A fast Khmer Forced Aligner powered by **Wav2Vec2CTC** and **Phonetisaurus**.
 
 - [ ] Built-in Speech Enhancement
