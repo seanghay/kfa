@@ -88,7 +88,9 @@ def align(y, sr, text, silent=False):
     second_start = 0
     for i, word in enumerate(word_segments):
         ratio = y.shape[-1] / trellis.shape[0]
+        actual_second_start = ratio * word.start / sr
         second_end = ratio * word.end / sr
+        
         if i < len(word_segments) - 1:
             second_end = max(ratio * word_segments[i + 1].start / sr, second_end)
         seq_idx = sum(spans[0:i]) + i
@@ -96,5 +98,5 @@ def align(y, sr, text, silent=False):
         text_segment = "".join(
             map(lambda x: x[0], text_sequences[seq_idx : seq_idx + span_size + 1])
         )
-        yield (text_segment, second_start, second_end)
+        yield (text_segment, second_start, second_end, actual_second_start)
         second_start = second_end
