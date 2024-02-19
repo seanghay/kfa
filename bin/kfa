@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 from pathlib import Path
 from argparse import ArgumentParser
+from kfa import align
 import librosa
 import json
-from kfa import align
+import chardet
+
 
 if __name__ == "__main__":
     parser = ArgumentParser(
@@ -22,14 +24,14 @@ if __name__ == "__main__":
         default=False,
         help="Suppress progress information",
     )
+
     args = parser.parse_args()
     y, sr = librosa.load(args.audio, sr=16000, mono=True)
-
-    with open(args.text) as infile:
-        text = infile.read()
-
+    with open(args.text, "rb") as infile:
+        textbytes = infile.read()
+        detection = chardet.detect(textbytes)
+        text = textbytes.decode(detection["encoding"])
     alignments = list(align(y, sr, text, silent=args.quiet))
-
     with open(args.output, "w") as outfile:
         for text_segment, second_start, second_end in alignments:
             outfile.write(

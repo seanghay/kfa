@@ -18,6 +18,8 @@ import appdirs
 import os
 import shutil
 
+_EMISSION_INTERVAL = 30
+
 _MODEL_URL = "https://huggingface.co/seanghay/wav2vec2-base-khmer-phonetisaurus/resolve/main/wav2vec2-km-base-1500.onnx"
 _MODEL_DIR = os.path.join(appdirs.user_cache_dir(), "kfa")
 _MODEL_FILE_PATH = os.path.join(_MODEL_DIR, "wav2vec2-km-base-1500.onnx")
@@ -30,19 +32,17 @@ if not os.path.exists(_MODEL_FILE_PATH):
 
 model = rt.InferenceSession(_MODEL_FILE_PATH)
 
-EMISSION_INTERVAL = 30
-
 
 def align(y, sr, text, silent=False):
     total_duration = y.shape[-1] / sr
     i = 0
     emissions_arr = []
     with tqdm(
-        total=math.ceil(total_duration / EMISSION_INTERVAL), disable=silent
+        total=math.ceil(total_duration / _EMISSION_INTERVAL), disable=silent
     ) as pbar:
         while i < total_duration:
-            segment_start_time, segment_end_time = (i, i + EMISSION_INTERVAL)
-            context = EMISSION_INTERVAL * 0.1
+            segment_start_time, segment_end_time = (i, i + _EMISSION_INTERVAL)
+            context = _EMISSION_INTERVAL * 0.1
             input_start_time = max(segment_start_time - context, 0)
             input_end_time = min(segment_end_time + context, total_duration)
             y_chunk = y[int(sr * input_start_time) : int(sr * input_end_time)]
@@ -55,7 +55,7 @@ def align(y, sr, text, silent=False):
                 emission_start_frame - offset : emission_end_frame - offset, :
             ]
             emissions_arr.append(emissions)
-            i += EMISSION_INTERVAL
+            i += _EMISSION_INTERVAL
             pbar.update()
 
     emissions = np.concatenate(emissions_arr, axis=0).squeeze()
@@ -98,4 +98,3 @@ def align(y, sr, text, silent=False):
         )
         yield (text_segment, second_start, second_end)
         second_start = second_end
-

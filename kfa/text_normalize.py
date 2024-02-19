@@ -1,7 +1,6 @@
 import os
 import re
 import pickle
-from pprint import pprint
 from kfa.number_verbalize import number_translate2ascii, number_replacer
 from sosap import Model
 from khmernormalizer import normalize
