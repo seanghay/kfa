@@ -189,7 +189,4 @@ Temporary Items
 
 *.onnx
 *.wav
-*.fst
 *.txt
-*.tsv
-*.pkl
