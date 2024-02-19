@@ -2,9 +2,76 @@
 from pathlib import Path
 from argparse import ArgumentParser
 from kfa import align
+import re
 import librosa
 import json
 import chardet
+
+_RE_PUNCT = re.compile(r"[៕។?!]\s*$")
+
+
+def write_to_whisper_json(file, alignments):
+
+    segments = []
+    words = []
+    text = ""
+    full_text = ""
+    id = 0
+
+    for (
+        text_segment,
+        second_start,
+        second_end,
+        actual_second_start,
+        actual_second_end,
+    ) in alignments:
+        text += text_segment
+        full_text += text_segment
+        words.append({"word": text_segment, "start": second_start, "end": second_end})
+
+        if _RE_PUNCT.search(text_segment):
+            segments.append(
+                {
+                    "id": id,
+                    "text": text,
+                    "start": words[0]["start"],
+                    "end": words[-1]["end"],
+                    "words": words,
+                }
+            )
+            text = ""
+            words = []
+            id += 1
+            
+    root = {"text": full_text, "segments": segments, "language": "Khmer"}
+    with open(file, "w") as outfile:
+        json.dump(root, outfile, ensure_ascii=False, indent=2)
+
+
+def write_to_jsonl(file, alignments):
+    with open(file, "w") as outfile:
+        for (
+            text_segment,
+            second_start,
+            second_end,
+            actual_second_start,
+            actual_second_end,
+        ) in alignments:
+            outfile.write(
+                json.dumps(
+                    {
+                        "audio_filepath": str(args.audio),
+                        "text": text_segment,
+                        "duration": second_end - second_start,
+                        "start": second_start,
+                        "end": second_end,
+                        "actual_start": actual_second_start,
+                        "actual_end": actual_second_end,
+                    },
+                    ensure_ascii=False,
+                )
+                + "\n"
+            )
 
 
 if __name__ == "__main__":
@@ -12,6 +79,8 @@ if __name__ == "__main__":
         "kfa",
         description="Khmer Forced Aligner powered by Wav2Vec2CTC and Phonetisaurus",
     )
+
+    parser.add_argument("-f", "--format", choices=["jsonl", "whisper"], default="jsonl")
     parser.add_argument("-a", "--audio", type=Path, required=True, help="Audio file")
     parser.add_argument("-t", "--text", type=Path, required=True, help="Text file")
     parser.add_argument(
@@ -32,20 +101,9 @@ if __name__ == "__main__":
         detection = chardet.detect(textbytes)
         text = textbytes.decode(detection["encoding"])
     alignments = list(align(y, sr, text, silent=args.quiet))
-    with open(args.output, "w") as outfile:
-        for text_segment, second_start, second_end, actual_second_start, actual_second_end in alignments:
-            outfile.write(
-                json.dumps(
-                    {
-                        "audio_filepath": str(args.audio),
-                        "text": text_segment,
-                        "duration": second_end - second_start,
-                        "start": second_start,
-                        "end": second_end,
-                        "actual_start": actual_second_start,
-                        "actual_end": actual_second_end,
-                    },
-                    ensure_ascii=False,
-                )
-                + "\n"
-            )
+
+    if args.format == "jsonl":
+        write_to_jsonl(args.output, alignments)
+
+    if args.format == "whisper":
+        write_to_whisper_json(args.output, alignments)
