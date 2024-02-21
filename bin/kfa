@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 from pathlib import Path
 from argparse import ArgumentParser
-from kfa import align
+from kfa import align, create_session
 import re
 import librosa
 import json
 import chardet
 
 _RE_PUNCT = re.compile(r"[៕។?!]\s*$")
-
 
 def write_to_whisper_json(file, alignments):
 
@@ -42,7 +41,7 @@ def write_to_whisper_json(file, alignments):
             text = ""
             words = []
             id += 1
-            
+
     root = {"text": full_text, "segments": segments, "language": "Khmer"}
     with open(file, "w") as outfile:
         json.dump(root, outfile, ensure_ascii=False, indent=2)
@@ -79,13 +78,16 @@ if __name__ == "__main__":
         "kfa",
         description="Khmer Forced Aligner powered by Wav2Vec2CTC and Phonetisaurus",
     )
-
     parser.add_argument("-f", "--format", choices=["jsonl", "whisper"], default="jsonl")
     parser.add_argument("-a", "--audio", type=Path, required=True, help="Audio file")
     parser.add_argument("-t", "--text", type=Path, required=True, help="Text file")
     parser.add_argument(
+        "-d", "--device", choices=["cuda", "cpu"], default="cpu", help="Specify device"
+    )
+    parser.add_argument(
         "-o", "--output", type=Path, required=True, help="Output JSONL file"
     )
+
     parser.add_argument(
         "-q",
         "--quiet",
@@ -100,8 +102,16 @@ if __name__ == "__main__":
         textbytes = infile.read()
         detection = chardet.detect(textbytes)
         text = textbytes.decode(detection["encoding"])
-    alignments = list(align(y, sr, text, silent=args.quiet))
 
+    providers = (
+        ["CUDAExecutionProvider", "CPUExecutionProvider"]
+        if args.device == "cuda"
+        else ["CPUExecutionProvider"]
+    )
+    
+    session = create_session(providers=providers)
+    alignments = list(align(y, sr, text, session=session, silent=args.quiet))
+    
     if args.format == "jsonl":
         write_to_jsonl(args.output, alignments)
 

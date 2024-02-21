@@ -30,10 +30,13 @@ if not os.path.exists(_MODEL_FILE_PATH):
     download_file(_MODEL_URL, _MODEL_FILE_TMP_PATH)
     shutil.copy(_MODEL_FILE_TMP_PATH, _MODEL_FILE_PATH)
 
-model = rt.InferenceSession(_MODEL_FILE_PATH)
+
+def create_session(providers=["CPUExecutionProvider"]):
+    sess = rt.InferenceSession(_MODEL_FILE_PATH, providers=providers)
+    return sess
 
 
-def align(y, sr, text, silent=False):
+def align(y, sr, text, session, silent=False):
     total_duration = y.shape[-1] / sr
     i = 0
     emissions_arr = []
@@ -46,7 +49,7 @@ def align(y, sr, text, silent=False):
             input_start_time = max(segment_start_time - context, 0)
             input_end_time = min(segment_end_time + context, total_duration)
             y_chunk = y[int(sr * input_start_time) : int(sr * input_end_time)]
-            emissions = model.run(None, {"input": [y_chunk]})[0]
+            emissions = session.run(None, {"input": [y_chunk]})[0]
             emissions = emissions[0]
             emission_start_frame = time_to_frame(segment_start_time)
             emission_end_frame = time_to_frame(segment_end_time)
@@ -89,17 +92,23 @@ def align(y, sr, text, silent=False):
     for i, word in enumerate(word_segments):
         ratio = y.shape[-1] / trellis.shape[0]
         actual_second_start = ratio * word.start / sr
-        
+
         second_end = ratio * word.end / sr
         actual_second_end = second_end
-        
+
         if i < len(word_segments) - 1:
             second_end = max(ratio * word_segments[i + 1].start / sr, second_end)
-        
+
         seq_idx = sum(spans[0:i]) + i
         span_size = spans[i]
         text_segment = "".join(
             map(lambda x: x[0], text_sequences[seq_idx : seq_idx + span_size + 1])
         )
-        yield (text_segment, second_start, second_end, actual_second_start, actual_second_end)
+        yield (
+            text_segment,
+            second_start,
+            second_end,
+            actual_second_start,
+            actual_second_end,
+        )
         second_start = second_end

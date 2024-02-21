@@ -20,15 +20,16 @@ kfa -a audio.wav -t text.txt -o alignments.jsonl
 #### Python
 
 ```python
-from kfa import align
+from kfa import align, create_session
 import librosa
 
 with open("test.txt") as infile:
     text = infile.read()
-
+    
 y, sr = librosa.load("text.wav", sr=16000, mono=True)
+session = create_session()
 
-for alignment in align(y, sr, text):
+for alignment in align(y, sr, text, session=session):
   print(alignment)
 ```
 
