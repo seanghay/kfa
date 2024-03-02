@@ -76,5 +76,5 @@ def tokenize_phonemize(text):
             yield (token, phonemic)
             continue
         lattices = re.sub(r"\.+", ".", "".join(phonemic))
-        token_ids = [vocabs[l] for l in lattices]
+        token_ids = [vocabs[lat] for lat in lattices]
         yield (token, lattices, token_ids)

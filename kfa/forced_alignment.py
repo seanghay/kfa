@@ -110,5 +110,6 @@ def align(y, sr, text, session, silent=False):
             second_end,
             actual_second_start,
             actual_second_end,
+            word.score,
         )
         second_start = second_end

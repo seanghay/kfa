@@ -13,11 +13,18 @@ pip install kfa
 
 #### CLI
 
+> [!Note]
+> `audio.wav` Input audio sample rate should be in 16kHz. Use ffmpeg or any other tools to resample the audio before processing.
+>
+> `ffmpeg -i audio_orig.wav -ac 1 -ar 16000 audio.wav`
+
+
 ```shell
 kfa -a audio.wav -t text.txt -o alignments.jsonl
 ```
 
 #### Python
+
 
 ```python
 from kfa import align, create_session
@@ -25,7 +32,7 @@ import librosa
 
 with open("test.txt") as infile:
     text = infile.read()
-    
+
 y, sr = librosa.load("text.wav", sr=16000, mono=True)
 session = create_session()
 
