@@ -21,6 +21,9 @@ pip install kfa
 
 ```shell
 kfa -a audio.wav -t text.txt -o alignments.jsonl
+
+# Output as Whisper style JSON format
+kfa -a audio.wav -t text.txt --format whisper -o alignments.json
 ```
 
 #### Python
